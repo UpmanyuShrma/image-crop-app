@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Crop & Border App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
+   
+</head>
+<body>
+    <div class="container">
+        <h1>Image Crop, Border & Download</h1>
+
+        <!-- Image Input -->
+        <div class="file-input-container">
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+
+        <!-- Uploaded Image Preview -->
+        <img id="uploadedImage" class="hidden" />
+
+        <!-- Buttons for Crop and Download -->
+        <div class="buttons">
+            <button id="cropBtn" disabled>Crop</button>
+            <button id="downloadBtn" class="hidden">Download</button>
+        </div>
+
+        <!-- Final Canvas for Processed Image -->
+        <canvas id="final-canvas" class="hidden" width="1800" height="1200"></canvas> <!-- 4 x 6 inch canvas at 300 DPI -->
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        let cropper;
+        const imageInput = document.getElementById('imageInput');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const finalCanvas = document.getElementById('final-canvas');
+        const ctx = finalCanvas.getContext('2d');
+        const cropBtn = document.getElementById('cropBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedImage.src = e.target.result;
+                uploadedImage.classList.remove('hidden');
+                cropBtn.disabled = false;
+                if (cropper) {
+                    cropper.destroy();
+                }
+                // Change the cropping ratio to 4x6
+                cropper = new Cropper(uploadedImage, {
+                    aspectRatio: 3.5 / 4.5
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        cropBtn.addEventListener('click', function() {
+            // Cropping canvas to 4x6 ratio
+            const croppedCanvas = cropper.getCroppedCanvas({
+                width: 1200,  // 4 inch at 300 DPI
+                height: 1800, // 6 inch at 300 DPI
+            });
+
+            // Create a new canvas for resizing to 3.5 cm x 4.5 cm (413 x 531 pixels)
+            const resizeCanvas = document.createElement('canvas');
+            resizeCanvas.width = 413; // 3.5 cm at 300 DPI
+            resizeCanvas.height = 531; // 4.5 cm at 300 DPI
+            const resizeCtx = resizeCanvas.getContext('2d');
+            resizeCtx.drawImage(croppedCanvas, 0, 0, 413, 531);
+
+            // Add borders (10px white and 2px black)
+            const borderedCanvas = document.createElement('canvas');
+            borderedCanvas.width = 433; // 413 + 10px white border
+            borderedCanvas.height = 551; // 531 + 10px white border
+            const borderedCtx = borderedCanvas.getContext('2d');
+
+            // White border
+            borderedCtx.fillStyle = 'white';
+            borderedCtx.fillRect(0, 0, borderedCanvas.width, borderedCanvas.height);
+
+            // Draw the resized image inside the white border
+            borderedCtx.drawImage(resizeCanvas, 10, 10);
+
+            // Black outer border
+            borderedCtx.strokeStyle = 'black';
+            borderedCtx.lineWidth = 2;
+            borderedCtx.strokeRect(1, 1, borderedCanvas.width - 2, borderedCanvas.height - 2);
+
+            // Fit bordered image on the 4x6 canvas in a 2x4 grid
+            ctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
+            for (let row = 0; row < 2; row++) {
+                for (let col = 0; col < 4; col++) {
+                    ctx.drawImage(borderedCanvas, col * 450, row * 600); // Adjusted spacing for 4x2 grid
+                }
+            }
+
+            downloadBtn.classList.remove('hidden');
+            finalCanvas.classList.remove('hidden');
+        });
+
+        downloadBtn.addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.download = 'processed-image.png';
+            link.href = finalCanvas.toDataURL();
+            link.click();
+        });
+    </script>
+</body>
+</html>
