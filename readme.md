@@ -22,20 +22,6 @@ This web application allows users to upload an image, crop it, add borders, and 
 4. Adjust the cropping area and click "Crop".
 5. Click "Download" to save the processed image.
 
-## Installation
-You can host the application using any static site hosting service, such as:
-- [GitHub Pages](https://pages.github.com/)
-- [Netlify](https://www.netlify.com/)
-- [Vercel](https://vercel.com/)
-- [Glitch](https://glitch.com/)
-- [CodePen](https://codepen.io/)
-
-### Example Deployment on GitHub Pages
-1. Create a new repository on GitHub.
-2. Upload the `index.html` and `styles.css` files.
-3. Go to the repository settings and enable GitHub Pages.
-4. Access your app at `https://<username>.github.io/<repository-name>/`.
-
 ## Contributing
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any suggestions or improvements.
 
